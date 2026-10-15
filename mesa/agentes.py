@@ -24,7 +24,10 @@ def _cliente_claude():
     global _cliente
     if _cliente is None:
         import anthropic
-        _cliente = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+        # Si la llave no pertenece a un workspace, Anthropic exige indicar cuál usar
+        encabezados = ({"anthropic-workspace-id": config.ANTHROPIC_WORKSPACE_ID}
+                       if config.ANTHROPIC_WORKSPACE_ID else None)
+        _cliente = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY, default_headers=encabezados)
     return _cliente
 
 
