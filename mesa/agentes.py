@@ -97,6 +97,22 @@ def ficha_demo(ticker, motivo):
     return ficha
 
 
+FUENTE_REAL = "Alpha Vantage vía MCP"
+
+
+def revisar_ficha(ficha, herramientas):
+    """Guardrail: motivos por los que la ficha NO es confiable (lista vacía = confiable)."""
+    problemas = []
+    if not herramientas:
+        problemas.append("Iris no consultó Alpha Vantage; las cifras podrían venir de la memoria del modelo")
+    precio, maximo, minimo = (a_numero(ficha.get(k)) for k in ("precio", "max_52s", "min_52s"))
+    if precio is None or precio <= 0:
+        problemas.append("precio ausente o no positivo")
+    elif None not in (maximo, minimo) and not (minimo * 0.98 <= precio <= maximo * 1.02):
+        problemas.append("precio fuera de su rango de 52 semanas")   # 2 % de margen por récords del día
+    return problemas
+
+
 def agente_recolector(ticker):
     """Devuelve (ficha, herramientas_usadas)."""
     if config.MODO_SIMULACION:
@@ -105,7 +121,8 @@ def agente_recolector(ticker):
         texto, herramientas = llamar_claude(PROMPT_RECOLECTOR, f"Acción: {ticker}", usar_mcp=True)
         ficha = extraer_json(texto)
         ficha["ticker"] = ticker
-        ficha["fuente"] = "Alpha Vantage vía MCP"
+        problemas = revisar_ficha(ficha, herramientas)
+        ficha["fuente"] = FUENTE_REAL if not problemas else f"NO VERIFICADO, revisa las cifras ({'; '.join(problemas)})"
         return ficha, herramientas
     except Exception as error:                     # MCP caído, cuota agotada o JSON inválido
         return ficha_demo(ticker, f"MCP no disponible: {type(error).__name__}"), []
@@ -210,4 +227,7 @@ def agente_comunicador(analisis):
     texto, _ = llamar_claude(PROMPT_COMUNICADOR, json.dumps(analisis, ensure_ascii=False), max_tokens=600)
     if DESCARGO not in texto:                      # garantía aunque el modelo lo olvide
         texto += f"\n\n{DESCARGO}"
+    fuente = analisis["ficha"].get("fuente", "")
+    if fuente != FUENTE_REAL:                      # datos demo o no verificados: aviso garantizado al inicio
+        texto = f"⚠️ {fuente}\n{texto}"
     return f"{FIRMA_VERA}\n{texto}"

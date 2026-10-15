@@ -139,3 +139,39 @@ def test_los_agentes_se_presentan_con_su_nombre():
     for nombre in ("Batuta", "Iris", "Euler", "Vera"):
         assert nombre in texto
     assert r["entrega_3_nota"].startswith(agentes.FIRMA_VERA)
+
+
+# ---------------------------------------------------------------- Guardrail H3: datos verificados
+FICHA_OK = ('{"nombre":"IBM","sector":"Tech","precio":"250.5","cambio_pct":"-0.8%",'
+            '"pe_ratio":"40.1","beta":"0.7","max_52s":"300","min_52s":"200"}')
+
+
+def test_iris_sin_herramientas_no_se_presenta_como_real(monkeypatch):
+    monkeypatch.setattr(config, "MODO_SIMULACION", False)
+    monkeypatch.setattr(agentes, "llamar_claude", lambda *a, **k: (FICHA_OK, []))   # respondió de memoria
+    ficha, herramientas = agentes.agente_recolector("IBM")
+    assert herramientas == [] and ficha["fuente"].startswith("NO VERIFICADO")
+
+
+@pytest.mark.parametrize("precio", ["0", "-5", "999"])
+def test_iris_marca_precios_incoherentes(monkeypatch, precio):
+    monkeypatch.setattr(config, "MODO_SIMULACION", False)
+    ficha_mala = FICHA_OK.replace('"250.5"', f'"{precio}"')
+    monkeypatch.setattr(agentes, "llamar_claude", lambda *a, **k: (ficha_mala, ["GLOBAL_QUOTE"]))
+    assert agentes.agente_recolector("IBM")[0]["fuente"].startswith("NO VERIFICADO")
+
+
+def test_vera_advierte_por_codigo_si_los_datos_no_son_verificados(monkeypatch):
+    monkeypatch.setattr(config, "MODO_SIMULACION", False)
+
+    def claude_falso(system, mensaje, usar_mcp=False, max_tokens=900):
+        if usar_mcp:
+            return FICHA_OK, []                                     # sin herramientas
+        if "Analista" in system:
+            return '{"lectura_precio":"a"}', []
+        return "IBM: nota que olvida advertir", []
+
+    monkeypatch.setattr(agentes, "llamar_claude", claude_falso)
+    nota = pl.pipeline("IBM", avisar=lambda t: None)["entrega_3_nota"]
+    assert nota.startswith(agentes.FIRMA_VERA + "\n⚠️ NO VERIFICADO")
+    assert nota.endswith(agentes.DESCARGO)

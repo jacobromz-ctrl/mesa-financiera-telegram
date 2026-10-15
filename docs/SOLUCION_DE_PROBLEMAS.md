@@ -54,6 +54,13 @@ Orden recomendado: instalar → `pytest -q` → `python analizar.py AAPL --simul
 - **Comprobar:** la ficha de Iris dice `"fuente": "Alpha Vantage vía MCP"`.
 - **Pendiente:** el notebook de Colab (`notebook/`) aún no envía este encabezado.
 
+## 3b. La nota dice "NO VERIFICADO, revisa las cifras (…)"
+
+- **Causa:** el guardrail de Iris (`revisar_ficha` en `mesa/agentes.py`) detectó que Claude respondió sin
+  consultar Alpha Vantage, o que el precio es incoherente (≤ 0 o fuera de su rango de 52 semanas).
+- **Qué hacer:** no usar esas cifras. Reintentar más tarde; si se repite, revisar la cuota de Alpha Vantage
+  y `python verificar_configuracion.py --mcp` (gasta 1 consulta).
+
 ## 4. "Re-run" repite el mismo error después de corregir algo
 
 - **Causa:** *Re-run* vuelve a ejecutar el **mismo commit** de la ejecución original. Si el arreglo está en
