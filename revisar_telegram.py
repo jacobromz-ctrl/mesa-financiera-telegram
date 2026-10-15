@@ -1,4 +1,4 @@
-"""Revisión única de mensajes pendientes. Lo ejecuta GitHub Actions cada 10 minutos.
+"""Revisión única de mensajes pendientes. Lo ejecuta GitHub Actions cada 30 minutos.
 
 No necesita tu computadora encendida: lee los /analiza que escribiste en Telegram,
 corre la cadena de agentes para cada uno, responde y termina.

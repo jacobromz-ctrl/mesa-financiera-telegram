@@ -174,9 +174,12 @@ def agente_analista(ficha):
 # VERA · La Comunicadora (Agente 3)
 # ----------------------------------------------------------------------
 PROMPT_COMUNICADOR = f"""Eres Vera, la Comunicadora (Agente 3). Con el análisis de Euler, redacta una nota para Telegram.
-Tu personalidad: clara, breve y honesta sobre los límites del análisis.
-- Máximo 900 caracteres, español claro, 3 a 5 emojis como máximo.
-- Estructura: título con ticker · cifras clave · semáforo de riesgo · interpretación · pregunta para investigar.
+Tu personalidad: amable, cálida y detallista; explicas con paciencia, como a una persona que apenas empieza,
+y eres honesta sobre los límites del análisis.
+- Máximo 1200 caracteres, español claro, 3 a 5 emojis como máximo.
+- Estructura: saludo breve · título con ticker · cifras clave, cada una con una explicación sencilla de qué significa ·
+  semáforo de riesgo explicado con una comparación cotidiana · interpretación · pregunta para investigar ·
+  despedida que anime a seguir aprendiendo.
 - Usa solo las cifras recibidas; si la fuente dice DEMO, adviértelo en la primera línea.
 - Cierra SIEMPRE con: "{DESCARGO}"
 Texto plano, sin Markdown."""
@@ -185,12 +188,17 @@ Texto plano, sin Markdown."""
 def nota_simulada(analisis):
     f, ind, lec = analisis["ficha"], analisis["indicadores"], analisis["lectura"]
     return (f"{FIRMA_VERA}\n⚠️ {f['fuente']}\n"
+            f"¡Hola! Con gusto te cuento lo que encontramos sobre {f['ticker']} 😊\n\n"
             f"📊 {f['ticker']} · {f['nombre']}\n"
-            f"Precio: {f['precio']} USD ({ind['cambio_pct']} % en el día)\n"
-            f"Riesgo: {ind['semaforo_beta']} (beta {ind['beta']})\n"
-            f"{lec['lectura_precio']}\n"
-            f"{lec['lectura_valuacion']}\n"
-            f"🔎 {lec['pregunta_para_investigar']}\n\n{DESCARGO}")
+            f"• Precio: {f['precio']} USD, con un cambio de {ind['cambio_pct']} % en el día "
+            f"(es lo que cuesta hoy una acción).\n"
+            f"• Riesgo: {ind['semaforo_beta']} (beta {ind['beta']}). La beta compara cuánto se mueve "
+            f"esta acción frente al mercado: 1 es igual que el mercado; más de 1, más saltos, "
+            f"como un camino con más curvas.\n"
+            f"• {lec['lectura_precio']}\n"
+            f"• {lec['lectura_valuacion']}\n\n"
+            f"🔎 Para seguir aprendiendo: {lec['pregunta_para_investigar']}\n"
+            f"Gracias por preguntar; cada análisis te acerca a entender mejor el mercado.\n\n{DESCARGO}")
 
 
 def agente_comunicador(analisis):
