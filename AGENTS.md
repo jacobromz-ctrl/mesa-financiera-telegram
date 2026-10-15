@@ -48,6 +48,11 @@ Cuando te pidan ejecutar o probar la actividad, sigue este orden y reporta cada 
 4. En modo real, corre `python analizar.py <TICKER>` y confirma que la fuente diga "Alpha Vantage vía MCP".
 5. Indica dónde quedó la evidencia (`salidas/*.json`) y qué capturas tomar para la rúbrica.
 
+## Si algo falla
+Lee primero `docs/SOLUCION_DE_PROBLEMAS.md`: tiene las rutas de resolución que ya funcionaron
+(acceso a GitHub, error de workspace de Anthropic, Re-run vs Run workflow, cron en `main`, logs bloqueados)
+y la lista de información que hay que tener lista antes de empezar. Agrega ahí cada problema nuevo que resuelvas.
+
 ## Estructura
 - `mesa/config.py` llaves y modos · `mesa/agentes.py` los 3 agentes · `mesa/pipeline.py` el orquestador
 - `mesa/telegram_io.py` Bot API · `mesa/comandos.py` interpreta `/analiza`
